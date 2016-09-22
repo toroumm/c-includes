@@ -1,0 +1,27 @@
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+
+class MatrixConfusion{
+
+public:
+	MatrixConfusion(){}
+	
+	void set_matrix(vector<vector<int> >labels, vector<vector<int> >out_desired, vector<vector> >out_got);
+	double get_Tau();
+	double get_kappa();
+
+	
+private:
+	
+	void resume_matrix(vector<vector<int> >labels, vector<vector<int> >out_desired, vector<vector> >out_got);
+
+	vector<vector<int> >matrix;
+	vector<int>resume_desired,resume_got;
+	
+	
+	
+
+};

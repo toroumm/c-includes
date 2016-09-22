@@ -1,0 +1,83 @@
+#include "matriz_confusao.h"
+#include "utilitarios.h"
+#include <algorithm>
+#include <math>
+
+MatrixConfusion::MatrixConfusion(){}
+
+
+//**********************************************************************************************
+void MatrixConfusion::set_matrix(vector<vector<int> >labels, vector<vector<int> >out_desired, vector<vector> >out_got){
+
+	total_samples = out_desired.size();
+
+	vector<int>a(labels.size()+1);
+	matrix.resize(labels.size()+1, a);
+
+	 for(int i = 0; i < (int)out_desired.size(); i++)	
+		matrix[resume_desired[i]][resume_got[i]]++;
+
+	 for(int i = 0; i < (int)matrix.size(); i++)
+		matrix[i][matrix.size()-1] = accumulate(matrix[i].begin(),matrix[i].end()-1, 0);
+		
+}
+//**********************************************************************************************
+void MatrixCofusion::resume_Matrix(vector<vector<int> >labels, vector<vector<int> >out_desired, vector<vector> >out_got){
+
+	for(int i =0 ; i < (int)out_desired.size(); i++){
+
+		for(int j = 0; j < (int)labels.size(); j++){
+
+			if(out_desired[i] == labels[j])
+				resume_desired.push_back(j);
+			
+			if(out_got[i] == labels[j])
+				resume_got.push_back(j);
+		}
+	}
+}
+//**********************************************************************************************
+double MatrixConfusion::get_kappa(){
+
+	double diagonal = 1;
+
+	vector<int>n(matrix.size()-1);
+	
+	for(int i =0; i < (int)matrix.size()-1; i++)
+		diagonal *=matrix[i][i];
+
+	diagonal *= matrix.size()-1;
+	
+
+	for(int i =0; i < (int)matrix.size(); i++)
+		n[i] *= (matrix[matrix.size()-1][i] * matrix[i][matrix.size()-1]; 
+	
+	double n_diagonal = accumulate(n.begin(), n.end(), 0);
+		
+	return (diagonal- n_diagonal) / (pow(total_samples,2) - n_diagonal)  
+}
+
+//**********************************************************************************************
+double MatrixConfusion::get_tau(){
+
+	double diagonal = 1.0, n_iagonal;
+
+	vector<int>n(matrix.size()-1);
+	
+	for(int i =0; i < (int)matrix.size()-1; i++)
+		diagonal +=matrix[i][i];
+
+	diagonal /= total_samples;
+	
+	for(int i =0; i < (int)matrix.size()-1; i++)
+
+		for(int j = 0; j < (int)matrix.size()-1; j++)		
+	
+			n[i] += matrix[i][j]*matrix[i][matrix.size()-1];
+
+	n_diagonal = (1.0/pow(total_samples,2))*accumulate(n.begin(),n.end(),0);
+	
+	return (diagonal-n_diagonal) / (1- n_diagonal); 
+}		
+//**********************************************************************************************
+
