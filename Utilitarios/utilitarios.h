@@ -21,7 +21,7 @@ public:
 
     void saveTXTFile(vector<vector<string> > samples, string path);
     void saveTXTFile(vector<vector<int> >samples,string path);
-    void saveTXTFile(vector<vector<float> > samples, string path, bool save_to_c =true);
+    void saveTXTFile(vector<vector<float> > samples, string path);
 
     void saveTXTFile(vector<int> &samples, string path);
 
@@ -50,7 +50,7 @@ public:
     void shuffle_io_samples(vector<vector<float> >&samples,vector<vector<float> >&out);
     void shuffle_samples(vector<vector<float> >&samples);
 
-    void extract_output(vector<vector<float> >&samples,vector<vector<float> >&out, int col_output);
+    void extract_output(vector<vector<float> > &samples, vector<vector<float> > &out, int col_init, int col_end);
 
 
     vector<vector<float> > matrix_confusion(vector<vector<float> >get, vector<vector<float> >desire, float trunc_get_data = 0.5);

@@ -5,9 +5,11 @@
 #include <iterator>
 #include <algorithm>
 #include <dirent.h>
+#include <string>
+#include <cstring>
 
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+//#include "opencv2/highgui/highgui.hpp"
+//#include "opencv2/imgproc/imgproc.hpp"
 
 //template <typename T>
 
@@ -45,7 +47,7 @@ void Utilitarios::list_directory(vector<string> &list_dir, string path){
 
 //************************************************************************************
 
-void Utilitarios::saveTXTFile(vector<vector<float> > samples, string path, bool save_to_c){
+void Utilitarios::saveTXTFile(vector<vector<float> > samples, string path){
 
     ofstream file;
     file.open(path);
@@ -53,8 +55,8 @@ void Utilitarios::saveTXTFile(vector<vector<float> > samples, string path, bool 
         cout<<"Erro ao abrir arquivo: "<<path+".txt"<<endl;
         return;
     }
-    if(save_to_c ==1)
-        file<<samples.size()<<" "<<samples[0].size()<<endl;
+   // if(save_to_c ==1)
+     //   file<<samples.size()<<" "<<samples[0].size()<<endl;
 
     for(int i = 0; i < (int)samples.size(); i++){
         for(int j =0; j < (int)samples[i].size();j++){
@@ -76,7 +78,7 @@ void Utilitarios::saveTXTFile(vector<vector<string> > samples, string path){
         return;
     }
     
-    file<<samples.size()<<" "<<samples[0].size()<<endl;
+    //file<<samples.size()<<" "<<samples[0].size()<<endl;
     
     for(int i = 0; i < (int)samples.size(); i++){
         for(int j =0; j < (int)samples[i].size();j++){
@@ -99,7 +101,7 @@ void Utilitarios::saveTXTFile(vector<vector<int> >samples,string path){
         return;
     }
 
-    file<<samples.size()<<" "<<samples[0].size()<<endl;
+    //file<<samples.size()<<" "<<samples[0].size()<<endl;
 
     for(int i = 0; i < (int)samples.size(); i++){
         for(int j =0; j < (int)samples[i].size();j++){
@@ -122,7 +124,7 @@ void Utilitarios::saveTXTFile(vector<int >&samples,string path){
         return;
     }
     
-    file<<samples.size()<<endl;
+    //file<<samples.size()<<endl;
     
     for(int i = 0; i < (int)samples.size(); i++)
         file<<samples[i]<<endl;
@@ -274,7 +276,7 @@ void Utilitarios::loadTXTFile(vector<vector<string> >&samples,string path){
 
 }
 //*******************************************************************************************
-void Utilitarios::extract_output(vector<vector<float> > &samples, vector<vector<float> > &out, int col_output){
+void Utilitarios::extract_output(vector<vector<float> > &samples, vector<vector<float> > &out, int col_init, int col_end){
 
     vector<vector<float> >new_sample;
 
@@ -284,7 +286,7 @@ void Utilitarios::extract_output(vector<vector<float> > &samples, vector<vector<
 
         for(int j = 0; j < (int)samples[i].size();j++){
 
-            if(col_output < 0 && j >= (int)samples[i].size()+col_output){
+            if(j <= col_end && j >=col_init ){
                 out[i].push_back(samples[i][j]);
             }else
                 new_sample[i].push_back(samples[i][j]);
@@ -329,7 +331,7 @@ void Utilitarios::mergeVector(vector<vector<float> > &in, vector<vector<float> >
 }
 
 //*******************************************************************************************
-void Utilitarios::saveXMLFile(vector<vector<float> >samples,string path){
+/*void Utilitarios::saveXMLFile(vector<vector<float> >samples,string path){
 
     path +=".xml";
     
@@ -423,7 +425,7 @@ void Utilitarios::appendXMLFile(vector<vector<float> > &samples, string path){
 
     xmlFile2.release();
 
-}
+}*/
 //*******************************************************************************************
 void Utilitarios::print(vector<vector<float> > samples){
 

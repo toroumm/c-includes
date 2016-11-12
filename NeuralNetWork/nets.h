@@ -118,6 +118,7 @@ public:
     void set_n_epochs_trained(int value);
     void set_stop_early(bool value);
     void set_batch_show_progress(int value);
+    void set_min_loss_function_error(float value);
 
     bool get_dropout_on();
     bool get_softmax_output_layer();
@@ -145,6 +146,7 @@ public:
     float get_last_hit_validation();
     float get_last_cost_train();
     float get_last_cost_validation();
+    float get_min_loss_function_error();
 
     float get_cross_product(vector<float>a,vector<float>b);
     float get_treatment(float value);
@@ -208,7 +210,7 @@ private:
 
     int epochs,batch_data, n_samples, n_validation, learning_decay_batch, n_epochs_treined, batch_show_progress;
 
-    float learning_rate, alpha, learning_decay, tanh_a, tanh_b,lambda_l2, error_minimum, weight_decay_cost;
+    float learning_rate, alpha, learning_decay, tanh_a, tanh_b,lambda_l2, error_minimum, weight_decay_cost, min_loss_function_error;
     float last_hit_train, last_hit_validation, last_cost_train, last_cost_validation, cost_train, cost_validation;
 
 

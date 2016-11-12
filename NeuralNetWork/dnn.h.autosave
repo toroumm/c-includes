@@ -12,7 +12,7 @@ class DNN: public MLP
 public:
 
     DNN();
-    DNN(int input,int output, vector<int>_hidden, vector<int>_epochs);
+    DNN(int input, int output, vector<int>_hidden);
 
     void set_hidden_pre_train_learning_rate(vector<float>_learning);
     void set_hidden_pre_train_momentum(vector<float>_momentum);

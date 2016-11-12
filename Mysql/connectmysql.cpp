@@ -326,7 +326,6 @@ void ConnectMysql::insert_experiments(DNN dnn, int base, int fold, int teste_siz
     sql_comand += replace(to_string(dnn.get_last_hit_train()))+","+replace(to_string(dnn.get_last_hit_validation()))+","+replace(to_string(teste_hit))+",";
     sql_comand += replace(to_string(dnn.get_last_cost_train()))+","+replace(to_string(dnn.get_last_cost_validation()))+","+to_string(dnn.get_n_epochs_trained())+");";
 
-    cout<<sql_comand<<endl;exit(0);
     insert_values(sql_comand);
 }
 

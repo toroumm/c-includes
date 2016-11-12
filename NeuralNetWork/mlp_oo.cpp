@@ -226,16 +226,18 @@ void MLP::run_MLP(vector<vector<float> > samples, vector<vector<float> > out,int
     set_last_cost_validation(0);
     set_last_hit_validation(0);
 
+
     util.shuffle_io_samples(samples,out);
 
     try {
 
-        for(int i = 0; i < get_epochs(); i++){
+
+        for(int i = 0; i < get_epochs() ; i++){
 
             forward(samples,out,1);
 
             if(i%get_learning_decay_batch() == 0)
-                if(get_learning_rate() > 0.0001)
+                   if(get_learning_rate() > 0.0001)
                     set_learning_rate(get_learning_rate()*get_learning_decay());
 
             vector<vector<float> >aux_samples, aux_validation;
@@ -295,7 +297,8 @@ void MLP::run_MLP(vector<vector<float> > samples, vector<vector<float> > out,int
                     train_error_tolerance_zz -=0.3;
                 }
             }
-
+            if((get_min_loss_function_error() != -1 && get_min_loss_function_error() >= get_last_cost_train()+get_weight_decay_cost()))
+                break;
            // if(train_error_tolerance_zz >= train_limit_zz && get_learning_decay() < 1){set_learning_rate(get_learning_rate()*0.9); train_limit_zz += train_limit_zz;}
 
            // if(error[error.size()-1] < get_error_minimum() ||  get_stop_early() && train_error_tolerance_zz >=20)
@@ -392,11 +395,11 @@ void MLP::local_field_induced(vector<Layer> &layer){
 
                 for(int j = 0; j < (int)layer[i].neurons.size(); j++){
 
-                    layer[i].neurons[j].vj = get_treatment((get_cross_product(layer[i].neurons[j].weight,layer[i].input)));
+                    layer[i].neurons[j].vj = ((get_cross_product(layer[i].neurons[j].weight,layer[i].input)));
 
 
                     if(!get_softmax_output_layer())
-                        layer[i].output[j] = get_treatment((this->*activation_function_out)(layer[i].neurons[j].vj + layer[i].neurons[j].bias));
+                        layer[i].output[j] = ((this->*activation_function_out)(layer[i].neurons[j].vj + layer[i].neurons[j].bias));
 
                     layer[i].neurons[j].set_dropout_result(1);
                 }
@@ -412,7 +415,7 @@ void MLP::local_field_induced(vector<Layer> &layer){
 
                         layer[i].neurons[j].set_dropout_result(1);
 
-                        layer[i].neurons[j].vj  = get_treatment(get_cross_product(layer[i].neurons[j].weight, layer[i].input));
+                        layer[i].neurons[j].vj  = (get_cross_product(layer[i].neurons[j].weight, layer[i].input));
 
                         layer[i].output[j] =  (this->*activation_function)(layer[i].neurons[j].vj + layer[i].neurons[j].bias);
 
@@ -445,21 +448,22 @@ void MLP::gradient_last_layer(Layer *layer, vector<float> out){
 
         if(LOSS_FUNC_TYPE == MEAN_SQUARE_ERROR  && !get_softmax_output_layer()){
             layer->neurons[i].erro =(out[i] - layer->output[i]);
-            layer->gradient[i]  = get_treatment((layer->neurons[i].erro * (this->*derivate_function_out)(layer->output[i])));
+            layer->gradient[i]  = ((layer->neurons[i].erro * (this->*derivate_function_out)(layer->output[i])));
 
         }
         else if(LOSS_FUNC_TYPE == CROSS_ENTROPY && !get_softmax_output_layer()){
             layer->neurons[i].erro = 0;
             for(int j = 0; j < (int)layer->input.size(); j++)
                 layer->neurons[i].erro += layer->input[j] * (out[i] - layer->output[i]);
-            layer->neurons[i].erro /= layer->input.size();
+            if(layer->input.size() > 0)
+                layer->neurons[i].erro /= layer->input.size();
 
-            layer->gradient[i]  = get_treatment((layer->neurons[i].erro * (this->*derivate_function_out)(layer->output[i])));
+            layer->gradient[i]  = ((layer->neurons[i].erro * (this->*derivate_function_out)(layer->output[i])));
         }
 
         else if(get_softmax_output_layer()){
-
-            layer->gradient[i] = get_treatment((derivate_softmax(out[i],layer->output[i])/get_batch()));
+            if(get_batch() > 0)
+                layer->gradient[i] = ((derivate_softmax(out[i],layer->output[i])/get_batch()));
         }
     }
 }
@@ -490,7 +494,7 @@ void MLP::gradient_hidden_layers(vector<Layer> &layer){
                         if(layer[i+1].neurons[k].get_dropout_result())
                             s += layer[i+1].neurons[k].weight[j] * layer[i+1].gradient[k];
 
-                    layer[i].gradient[j] = get_treatment(s * (this->*derivate_function)(layer[i].output[j]));
+                    layer[i].gradient[j] = (s * (this->*derivate_function)(layer[i].output[j]));
                 }
                 else
                     layer[i].gradient[j]  = 0;
@@ -527,20 +531,28 @@ void MLP::update_weights(vector<Layer> &layer, bool batch_on){
 
                     for(int k = 0; k < (int)layer[i].neurons[j].weight.size(); k++){
 
+                        if(isnan(layer[i].gradient[j]) || isnan(layer[i].input[k])){
+                            cout<<"Update weights gradient or input is NAN"<<endl;
+                        }
+
                         float delta =  ( layer[i].gradient[j] * layer[i].input[k] );
 
                         layer[i].neurons[j].weight_batch[k] += (delta + (layer[i].neurons[j].old_delta[k] * get_momentum()));
 
                         if(batch_on){
 
-                            float decay  = get_regularization_lambda() *   layer[i].neurons[j].weight[k];
+                            float decay  = 0;//get_regularization_lambda() *   layer[i].neurons[j].weight[k];
 
                             if(abs(decay) > 1)
                                 decay = 0;
 
                             layer[i].neurons[j].weight[k] +=  direction*get_learning_rate()*((layer[i].neurons[j].weight_batch[k])+decay);
 
-                            set_weight_decay_cost(get_weight_decay_cost()+((get_regularization_lambda() *  layer[i].neurons[j].weight[k]* layer[i].neurons[j].weight[k]*0.5)/layer[i].neurons[j].weight.size()));
+                            if(isnan(layer[i].neurons[j].weight[k])){
+                                cout<<"I have a NaN update weights"<<endl;
+                            }
+                            if(layer[i].neurons[j].weight.size() > 0)
+                                set_weight_decay_cost(get_weight_decay_cost()+((get_regularization_lambda() *  layer[i].neurons[j].weight[k]* layer[i].neurons[j].weight[k]*0.5)/layer[i].neurons[j].weight.size()));
 
                             layer[i].neurons[j].weight_batch[k] = 0;
                         }
@@ -551,7 +563,7 @@ void MLP::update_weights(vector<Layer> &layer, bool batch_on){
 
                     if(batch_on){
 
-                        layer[i].neurons[j].bias_batch  = get_treatment(layer[i].neurons[j].bias_batch);
+                        layer[i].neurons[j].bias_batch  = (layer[i].neurons[j].bias_batch);
 
                         layer[i].neurons[j].bias += (direction)*(layer[i].neurons[j].bias_batch);
 
@@ -647,6 +659,9 @@ void MLP::save_net(MLP *net, string path){
 
 void MLP::load_net(MLP *net, string path){
 
+
+
+
     ifstream file;
 
     file.open(path);
@@ -676,21 +691,21 @@ void MLP::load_net(MLP *net, string path){
 
             }
             file>>net->layers[i].neurons[j].bias;
-            net->layers[i].gradient[j];
-            net->layers[i].output[j];
+            net->layers[i].gradient[j] =0 ;
+            net->layers[i].output[j] =0;
             //net->layers[i].neurons[j].gradient = 0;
             //net->layers[i].neurons[j].output = 0;
         }
     }
     int size_mse;
     file>>size_mse;
-    cout<<"Tamanho MSE "<<size_mse<<endl;
 
     net->error.resize(size_mse);
     for(int i = 0; i < (int)net->error.size(); i++){
         file>>net->error[i];
 
     }
+
     file.close();
 }
 //*********************************************************************************************************
@@ -779,8 +794,8 @@ void MLP::print_net_data(MLP *net){
 
     // for(int i  = 0; i < (int)net->layers.size(); i++)
     //     cout<<"Camadas "<<i<<" Neuronios "<<net->layers[i].neurons.size()<<"  Conexoes  "<<net->layers[i].neurons[0].weight.size()<<endl;
-    cout<<"Camadas "<<0<<" Neuronios "<<net->layers[0].neurons.size()<<"  Conexoes  "<<net->layers[0].neurons[0].weight.size()<<endl;
-    cout<<"Camadas "<<1<<" Neuronios "<<net->layers[1].neurons.size()<<"  Conexoes  "<<net->layers[1].neurons[0].weight.size()<<endl;
+   // cout<<"Camadas "<<0<<" Neuronios "<<net->layers[0].neurons.size()<<"  Conexoes  "<<net->layers[0].neurons[0].weight.size()<<endl;
+   // cout<<"Camadas "<<1<<" Neuronios "<<net->layers[1].neurons.size()<<"  Conexoes  "<<net->layers[1].neurons[0].weight.size()<<endl;
 
     for(int i =0; i < (int)net->layers.size(); i++){
 
@@ -859,8 +874,6 @@ void MLP::predict(vector<vector<float> > samples, vector<vector<float> > &out){
         /* layers[0].neurons[j].input*/
         // for(int j = 0; j < (int)layers[0].neurons.size();j++)
         layers[0].input = samples[ii];
-
-
         local_field_induced(layers);
         out[ii].resize(layers[layers.size()-1].neurons.size());
 
@@ -908,7 +921,6 @@ void MLP::weights_changes(MLP net){
 
         cout<<"Average weight  "<<i<<" Value "<<layers[i]<<" bias "<<bias[i]<<endl;//" Average Out  "<<mean_output[i]<< "  "<<net.layers[i].neurons.size()<<endl;
     }
-
 }
 //*********************************************************************************************************
 
@@ -991,8 +1003,6 @@ void MLP::relu_test(){
 
             mlp.gradient_hidden_layers(mlp.layers);
 
-
-
             /* float diff1= 0, diff2=0,diff3=0,diff4=0;
 
             for(int i  = 0; i < (int)mlp.layers[0].output.size(); i++){
@@ -1009,8 +1019,6 @@ void MLP::relu_test(){
                 diff3 += fabs(mlp.layers[1].gradient[i]-gradient_w2[ii][i]);
             }
 
-
-
             for(int i  = 0; i < (int)mlp.layers[0].gradient.size(); i++){
                 diff4 += fabs(mlp.layers[0].gradient[i]-gradient_w1[ii][i] );
             }
@@ -1023,8 +1031,6 @@ void MLP::relu_test(){
                 mlp.update_weights(mlp.layers,true);
             else
                 mlp.update_weights(mlp.layers,false);
-
-
 
             //set_last_hit_train(get_hit_rate(output,aux_out,0.5));
             //set_last_cost_train((this->*loss_function)(output,aux_out));

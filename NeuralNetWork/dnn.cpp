@@ -2,7 +2,7 @@
 
 DNN::DNN(){}
 
-DNN::DNN(int input, int output, vector<int> _hidden, vector<int> _epochs){
+DNN::DNN(int input, int output, vector<int> _hidden){
 
     string erro= "DNN (constructor) :  ";
     if(input <= 0){
@@ -13,12 +13,12 @@ DNN::DNN(int input, int output, vector<int> _hidden, vector<int> _epochs){
 
         cout<<erro+"Problem with size of output"<<endl; return;
     }
-    if(_epochs.size() != _hidden.size()+1){
 
-        cout<<erro+"Epochs size its wrong, it must have one position more than hidden layer vector"<<endl;
-    }
+    start_mlp(input,output,_hidden);
 
-    start_dnn(input,output,_hidden,_epochs);
+    set_activation_function_hidden_layer(ReLU);
+
+    set_loss_function(CROSS_ENTROPY);
 }
 
 //*************************************************************************************
@@ -56,17 +56,11 @@ vector<float>DNN::get_hidden_pre_train_momentum(){return hidden_momentum;}
 vector<float>DNN::get_hidden_pre_train_learning_rate(){return hidden_learning_rate;}
 vector<int>DNN::get_hidden_pre_train_epochs(){return hidden_epochs;}
 
-//*************************************************************************************
-void DNN::start_dnn(int input, int output, vector<int> _hidden, vector<int> _epochs){
 
-    set_hidden_pre_train_epochs(_epochs);
-    set_hidden_layer(_hidden);
-    start_mlp(input,output,_hidden);
-    set_batch(1);
-    set_hidden_pre_train_batch(1);
-    set_percent_validation(0.1);
-    set_hidden_pre_train_lambda_weight_decay(0.0001);
-    set_hidden_pre_train_act_function(SIGMOIDAL);
-    set_hidden_pre_train_act_function_output(SIGMOIDAL);
-}
 //*************************************************************************************
+void DNN::run_DNN(vector<vector<float> > _samples, vector<vector<float> > _out, int epochs, float _percent_validation){
+
+    run_MLP(_samples,_out,epochs,_percent_validation);
+}
+
+//************************************************************************************

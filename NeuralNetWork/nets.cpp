@@ -39,7 +39,7 @@ void Neuron::start_neuron(int connections){
     random_device rd, rb; mt19937 gen(rd()),gen_bias(rb());
 
     normal_distribution <>d(0,0.1/*sqrt(weight.size())*/);
-    normal_distribution <>b(0,0.1);
+    normal_distribution <>b(0,0.01);
 
     for(int i = 0; i < (int)weight.size(); i++)
         weight[i] = d(gen);
@@ -309,13 +309,15 @@ Nets::Nets()
     set_batch_show_progress(300);
 
     set_weight_decay_cost(0);
+
+    set_min_loss_function_error(-1);
 }
 
 //**********************************************************************************************
 Nets::~Nets(){}
 
 //**********************************************************************************************
-
+void Nets::set_min_loss_function_error(float value){min_loss_function_error = value;}
 void Nets::set_dropout_threshold(float value){dropout_threshold = value;}
 void Nets::set_dropout_on(bool value){dropout = value;}
 void Nets::set_regularization_lambda(float value){lambda_l2 =value;}
@@ -488,7 +490,7 @@ void Nets::set_param_tanh(float a, float b){ tanh_a = a; tanh_b =b;}
  *
  */
 
-void Nets::set_batch(int value){if(value > 0)batch_data = value;}
+void Nets::set_batch(int value){if(value > 0)batch_data = value;else batch_data=1;}
 
 /**
  * @brief Nets::set_softmax_output_layer
@@ -591,6 +593,7 @@ float Nets::get_last_cost_train(){return last_cost_train;}
 
 float Nets::get_last_cost_validation(){return last_cost_validation;}
 
+float Nets::get_min_loss_function_error(){return min_loss_function_error;}
 
 //**********************************************************************************************************
 float Nets::get_mse(vector<vector<float> > desire,vector<vector<float> > get){
@@ -613,7 +616,7 @@ float Nets::get_cross_entropy(vector<vector<float> > desire, vector<vector<float
         for(int j = 0; j < (int)desire[i].size(); j++){
             if(get[i][j] >= 1)
                 get[i][j] = 0.999999;
-            if(get[i][j] <= 0)
+            if(get[i][j] < 0.00000001)
                 get[i][j] = 0.00000001;
 
             if(fabs(desire[i][j]) > 0)
@@ -622,8 +625,10 @@ float Nets::get_cross_entropy(vector<vector<float> > desire, vector<vector<float
             // t+= (desire[i][j]*log(get[i][j])) + ((1-desire[i][j])*log(1-get[i][j]));
         }
 
-        if(isnan(t) || -isnan(t))
-            return -1;
+        if(isnan((t)/desire.size()) || isnan(t) || -isnan(t) || isinf(t) || -isinf(t) || isinf((t)/desire.size())){
+            cout<<"É no cross entropy"<<endl;
+            return 0.000001;
+        }
     }return (t)/desire.size();
 }
 
@@ -678,6 +683,7 @@ float Nets::get_hit_rate(vector<vector<float> > desire, vector<vector<float> > p
 
         for(int i = 0; i < (int)desire.size(); i++){
             for(int j = 0; j < (int)desire[i].size();j++){
+
                 if(predict[i][j] > trunc)
                     predict[i][j] = 1.0;
                 else
@@ -712,7 +718,7 @@ float Nets::get_hit_rate(vector<vector<float> > desire, vector<vector<float> > p
                     max = predict[i][j]; x = i; y =j;
                 }
             }
-            if(desire[x][y]==1)
+            if(desire[x][y]==1 && predict[x][y] >= trunc)
                 hit_rate+=1.0;
         }
     }

@@ -374,12 +374,12 @@ void RBM::run(int epochs){
 
         set_free_energy_validation(get_free_energy_calc(validation));
 
-      /*  cout<<epochs<<"  "<<get_free_energy_samples()<<" "<<get_free_energy_validation()<<" "<<get_free_energy_samples()-get_free_energy_validation()<<
+       /* cout<<epochs<<"  "<<get_free_energy_samples()<<" "<<get_free_energy_validation()<<" "<<get_free_energy_samples()-get_free_energy_validation()<<
              " Precision "<<precision[precision.size()-1]<<"  % mean  "<<1-(precision[precision.size()-1]/(samples.size()*samples[0].size()))<<
              " Status "<<c_status<<"  "<<c_energy<<"  "<<get_learning_rate()<<endl;*/
 
         energy = get_free_energy_samples();
-        if(!(epochs % 20))
+        if(!(epochs % get_learning_decay_batch()))
             set_learning_rate(get_learning_rate()*get_learning_decay());
         if(validation.size() > 0){
             if(fabs(get_free_energy_samples()-get_free_energy_validation())> threshold_rbm_overfit){

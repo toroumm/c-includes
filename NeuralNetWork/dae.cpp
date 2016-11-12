@@ -6,7 +6,7 @@ DAE::DAE(){}
 //****************************************************************************
 DAE::DAE(int input, int output, vector<int> _hidden, vector<int> _epochs){
 
-    start_dnn(input,output, _hidden, _epochs);
+    start_dae(input,output, _hidden, _epochs);
 
     int pre_train_epochs = 0;
     for(int i  = 0; i < (int)_epochs.size()-1; i++)
@@ -18,6 +18,21 @@ DAE::DAE(int input, int output, vector<int> _hidden, vector<int> _epochs){
 
 
 }
+//****************************************************************************
+
+void DAE::start_dae(int input, int output, vector<int> _hidden, vector<int> _epochs){
+
+    set_hidden_pre_train_epochs(_epochs);
+    set_hidden_layer(_hidden);
+    start_mlp(input,output,_hidden);
+    set_batch(1);
+    set_hidden_pre_train_batch(1);
+    set_percent_validation(0.1);
+    set_hidden_pre_train_lambda_weight_decay(0.0001);
+    set_hidden_pre_train_act_function(ReLU);
+    set_hidden_pre_train_act_function_output(SOFTMAX);
+}
+
 //****************************************************************************
 void DAE::run_DAE(vector<vector<float> > _samples, vector<vector<float> > _out){
 
