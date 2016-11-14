@@ -21,6 +21,19 @@ DNN::DNN(int input, int output, vector<int> _hidden){
     set_loss_function(CROSS_ENTROPY);
 }
 
+void DNN::start_net(int input, int output, vector<int> _hidden, vector<int> _epochs){
+
+    set_hidden_pre_train_epochs(_epochs);
+    set_hidden_layer(_hidden);
+    start_mlp(input,output,_hidden);
+    set_batch(1);
+    set_hidden_pre_train_batch(1);
+    set_percent_validation(0.1);
+    set_hidden_pre_train_lambda_weight_decay(0.0001);
+    set_hidden_pre_train_act_function(ReLU);
+    set_hidden_pre_train_act_function_output(SOFTMAX);
+}
+
 //*************************************************************************************
 void DNN::set_hidden_pre_train_dropout_on(bool value){dropout_hidden_on = value;}
 void DNN::set_hidden_pre_train_dropout_threshold(float value){ dropout_hidden_threshold =value;}

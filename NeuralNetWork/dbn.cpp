@@ -15,8 +15,7 @@ DBN::DBN(){
 
 DBN::DBN(int input, int output, vector<int> _hidden, vector<int> _epochs){
 
-
-    start_dnn(input, output,_hidden,_epochs);
+    start_net(input, output,_hidden,_epochs);
 
     set_gibbs_steps(1);
     set_threshold_rbm_overfit(0.099);

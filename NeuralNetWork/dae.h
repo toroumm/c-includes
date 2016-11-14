@@ -15,6 +15,8 @@ public:
     DAE();
     DAE(int input,int output, vector<int>_hidden, vector<int>_epochs);
 
+    void start_dae(int input, int output, vector<int> _hidden, vector<int> _epochs);
+
     void run_DAE(vector<vector<float> >_samples, vector<vector<float> >_out);
 
 protected:
